@@ -25,7 +25,8 @@ async function getValidEmoticons(): Promise<EmoticonMap> {
 }
 
 emoticonRouter.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'teams.microsoft.com');
+    const origin = res.get('origin') || 'https://teams.microsoft.com';
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
