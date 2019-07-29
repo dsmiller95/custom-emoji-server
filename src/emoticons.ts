@@ -24,6 +24,12 @@ async function getValidEmoticons(): Promise<EmoticonMap> {
     return result;
 }
 
+emoticonRouter.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'microsoft.com');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
 emoticonRouter.get('/emoticons', async (req, res, next) => {
     const emojisMap = await getValidEmoticons();
     res.send(Object.keys(emojisMap));
