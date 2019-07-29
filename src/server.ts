@@ -1,6 +1,8 @@
 import express from 'express';
 import { Pool } from 'pg';
 
+import { emoticonRouter } from './emoticons';
+
 const PORT = process.env.PORT || 5000;
 const app = express();
 
@@ -22,5 +24,7 @@ app.get('/db', async (req, res) => {
         res.send('Error ' + err);
     }
 });
+
+app.use('/', emoticonRouter);
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
