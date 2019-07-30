@@ -15,6 +15,13 @@ interface EmoticonMap { [emoticon: string]: string; }
 const emoticonMatch = /[^~]+/;
 const emojiListPath = './assets/emoji/';
 
+emoticonRouter.use((req, res, next) => {
+    const origin = res.get('origin') || 'https://teams.microsoft.com';
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
 emoticonRouter.post('/emoticon/:emoticon',
     bodyParser.raw({
         limit: '1mb',
@@ -26,7 +33,7 @@ emoticonRouter.post('/emoticon/:emoticon',
         const emojiName = req.params.emoticon;
         try {
             const client = await pool.connect();
-            const queryResult = await client.query(
+            await client.query(
                 'Insert into emoji (name, image) values ($1, $2)',
                 [emojiName, hexData]);
             client.release();
@@ -36,32 +43,33 @@ emoticonRouter.post('/emoticon/:emoticon',
         }
     });
 
-async function getValidEmoticons(): Promise<EmoticonMap> {
-    const files = await fs.readdir(emojiListPath);
-    const result: EmoticonMap = {};
-    files.forEach(fileName => {
-        const match = fileName.match(emoticonMatch);
-        if (match.length > 0) {
-            const emoticonName = match[0];
-            result[emoticonName] = emojiListPath + fileName;
-        }
-    });
-    return result;
-}
-
-emoticonRouter.use((req, res, next) => {
-    const origin = res.get('origin') || 'https://teams.microsoft.com';
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
+emoticonRouter.delete('emoticon/:emoticon', async (req, res) => {
+    const emojiName = req.params.emoticon;
+    try {
+        const client = await pool.connect();
+        await client.query(
+            'delete from emoji where name = $1',
+            [emojiName]);
+        client.release();
+        res.status(200).send('deleted emoji ' + emojiName);
+    } catch (err) {
+        res.status(500).send('Error ' + err);
+    }
 });
 
-emoticonRouter.get('/emoticons', async (req, res, next) => {
-    const emojisMap = await getValidEmoticons();
-    res.send(Object.keys(emojisMap));
+emoticonRouter.get('/emoticons', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('select name from emoji');
+        const rows: Array<{ name: string }> = result.rows;
+        res.send(rows.map(row => row.name));
+    } catch (err) {
+        res.status(500).send('Error ' + err);
+        return;
+    }
 });
 
-emoticonRouter.get('/emoticon/:emoticon', async (req, res, next) => {
+emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
     const emoticonName = req.params.emoticon;
     console.log(`getting ${emoticonName}`);
 
