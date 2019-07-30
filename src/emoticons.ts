@@ -43,7 +43,7 @@ emoticonRouter.post('/emoticon/:emoticon',
         }
     });
 
-emoticonRouter.delete('emoticon/:emoticon', async (req, res) => {
+emoticonRouter.delete('/emoticon/:emoticon', async (req, res) => {
     const emojiName = req.params.emoticon;
     try {
         const client = await pool.connect();
@@ -54,18 +54,6 @@ emoticonRouter.delete('emoticon/:emoticon', async (req, res) => {
         res.status(200).send('deleted emoji ' + emojiName);
     } catch (err) {
         res.status(500).send('Error ' + err);
-    }
-});
-
-emoticonRouter.get('/emoticons', async (req, res) => {
-    try {
-        const client = await pool.connect();
-        const result = await client.query('select name from emoji');
-        const rows: Array<{ name: string }> = result.rows;
-        res.send(rows.map(row => row.name));
-    } catch (err) {
-        res.status(500).send('Error ' + err);
-        return;
     }
 });
 
@@ -92,4 +80,16 @@ emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
 
     res.set('Content-Type', 'image/gif');
     res.send(imageData);
+});
+
+emoticonRouter.get('/emoticons', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('select name from emoji');
+        const rows: Array<{ name: string }> = result.rows;
+        res.send(rows.map(row => row.name));
+    } catch (err) {
+        res.status(500).send('Error ' + err);
+        return;
+    }
 });
