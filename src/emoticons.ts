@@ -28,10 +28,7 @@ emoticonRouter.post('/emoticon/:emoticon',
             const client = await pool.connect();
             const queryResult = await client.query(
                 'Insert into emoji (name, image) values ($1, $2)',
-                [emojiName, hexData],
-                (err, result) => {
-                    res.status(500).send('Sql error when inserting image' + err);
-                });
+                [emojiName, hexData]);
             client.release();
             res.status(200).send('successfully inserted emoji ' + emojiName);
         } catch (err) {
@@ -67,15 +64,24 @@ emoticonRouter.get('/emoticons', async (req, res, next) => {
 emoticonRouter.get('/emoticon/:emoticon', async (req, res, next) => {
     const emoticonName = req.params.emoticon;
     console.log(`getting ${emoticonName}`);
-    const emoticons = await getValidEmoticons();
-    const path = emoticons[emoticonName];
-    if (!path) {
-        res.sendStatus(404);
+
+    let imageData: Buffer;
+    try {
+        const client = await pool.connect();
+        const result = await client.query(
+            'select image from emoji where name = $1',
+            [emoticonName]);
+        const rows = result.rows;
+        if (rows.length === 0) {
+            res.sendStatus(404);
+            return;
+        }
+        imageData = rows[0].image;
+    } catch (err) {
+        res.status(500).send('Error ' + err);
         return;
     }
 
-    const fileData = await fs.readFile(path);
-
     res.set('Content-Type', 'image/gif');
-    res.send(fileData);
+    res.send(imageData);
 });
