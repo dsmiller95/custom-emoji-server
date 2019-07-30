@@ -16,7 +16,7 @@ app.get('/', (req, res) => res.send('Hello Emoji Users!!'));
 app.get('/db', async (req, res) => {
     try {
         const client = await pool.connect();
-        const result = await client.query('SELECT * FROM test_table');
+        const result = await client.query('SELECT * FROM emoji');
         res.send(result ? result.rows : 'nothing here');
         client.release();
     } catch (err) {
