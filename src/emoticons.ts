@@ -66,6 +66,7 @@ emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
         const result = await client.query(
             'select image from emoji where name = $1',
             [emoticonName]);
+        client.release();
         if (!result || !result.rows || result.rows.length === 0) {
             res.status(404).send('not found');
             return;
@@ -84,17 +85,11 @@ emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
 emoticonRouter.get('/emoticons', async (req, res) => {
     try {
         const client = await pool.connect();
-        console.log('starting query');
         const result = await client.query('select name from emoji');
-        console.log('done query');
+        client.release();
         const rows: Array<{ name: string }> = result.rows;
-        console.log('sending result');
-        console.log(rows);
         res.send(rows.map(row => row.name));
     } catch (err) {
-        console.log('error');
-        console.log(err);
         res.status(500).send('Error ' + err);
     }
-    console.log('complete');
 });
