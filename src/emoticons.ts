@@ -29,7 +29,6 @@ emoticonRouter.post('/emoticon/:emoticon',
     }), async (req, res) => {
         const data: Buffer = req.body;
         const hexData = '\\x' + data.toString('hex');
-
         const emojiName = req.params.emoticon;
         try {
             const client = await pool.connect();
@@ -67,11 +66,11 @@ emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
         const result = await client.query(
             'select image from emoji where name = $1',
             [emoticonName]);
-        const rows = result.rows;
-        if (rows.length === 0) {
-            res.sendStatus(404);
+        if (!result || !result.rows || result.rows.length === 0) {
+            res.status(404).send('not found');
             return;
         }
+        const rows = result.rows;
         imageData = rows[0].image;
     } catch (err) {
         res.status(500).send('Error ' + err);
