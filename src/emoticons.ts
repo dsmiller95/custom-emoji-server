@@ -32,6 +32,13 @@ emoticonRouter.post('/emoticon/:emoticon',
         const emojiName = req.params.emoticon;
         try {
             const client = await pool.connect();
+            const emojiIfExists = await client.query(
+                'select name from emoji where name = $1',
+                [emojiName]);
+            if (emojiIfExists && emojiIfExists.rows && emojiIfExists.rows.length > 0) {
+                res.status(400).send('emoji already exists');
+                return;
+            }
             await client.query(
                 'Insert into emoji (name, image) values ($1, $2)',
                 [emojiName, hexData]);
