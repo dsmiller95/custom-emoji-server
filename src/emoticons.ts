@@ -79,6 +79,8 @@ emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
     }
 
     res.set('Content-Type', 'image/gif');
+    const maxAge = Math.round(60 * 60 * 24 * (15 + (Math.random() * 2 - 1)));
+    res.header('Cache-Control', `public, max-age=${maxAge}`);
     res.send(imageData);
 });
 
