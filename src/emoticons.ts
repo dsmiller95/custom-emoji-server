@@ -40,7 +40,7 @@ emoticonRouter.post('/emoticon/:emoticon',
                 return;
             }
             await client.query(
-                'Insert into emoji (name, image) values ($1, $2)',
+                'Insert into emoji (name, image, uses) values ($1, $2, 0)',
                 [emojiName, hexData]);
             client.release();
             res.status(200).send('successfully inserted emoji ' + emojiName);
@@ -48,6 +48,23 @@ emoticonRouter.post('/emoticon/:emoticon',
             res.status(500).send('Error ' + err);
         }
     });
+
+type UsageData = Record<string, number>;
+emoticonRouter.post('emoticons/usage', bodyParser.json(), async (req, res) => {
+    const usages: UsageData = req.body;
+    try {
+        const client = await pool.connect();
+        
+        var requests = Object.keys(usages).map(emoticon => {
+            return client.query('update emoji set uses = uses + $1 where name = $2', [usages[emoticon], emoticon])
+        });
+        var result = await Promise.all(requests);
+        client.release();
+        res.status(200).send('successfully updated emoticon usages');
+    } catch (err) {
+        res.status(500).send('Error ' + err);
+    }
+});
 
 emoticonRouter.delete('/emoticon/:emoticon', async (req, res) => {
     const emojiName = req.params.emoticon;
