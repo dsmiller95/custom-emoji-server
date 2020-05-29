@@ -52,6 +52,10 @@ emoticonRouter.post('/emoticon/:emoticon',
 type UsageData = Record<string, number>;
 emoticonRouter.post('/emoticons/usage', bodyParser.json(), async (req, res) => {
     const usages: UsageData = req.body;
+    if(Object.keys(usages).length <= 0) {
+        res.status(400).send('No usage data found in body: ' + JSON.stringify(usages));
+        return;
+    }
     try {
         const client = await pool.connect();
         
