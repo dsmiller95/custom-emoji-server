@@ -50,7 +50,7 @@ emoticonRouter.post('/emoticon/:emoticon',
     });
 
 type UsageData = Record<string, number>;
-emoticonRouter.post('emoticons/usage', bodyParser.json(), async (req, res) => {
+emoticonRouter.post('/emoticons/usage', bodyParser.json(), async (req, res) => {
     const usages: UsageData = req.body;
     try {
         const client = await pool.connect();
