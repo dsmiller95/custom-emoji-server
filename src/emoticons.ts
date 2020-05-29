@@ -60,7 +60,7 @@ emoticonRouter.post('/emoticons/usage', bodyParser.json(), async (req, res) => {
         });
         var result = await Promise.all(requests);
         client.release();
-        res.status(200).send('successfully updated emoticon usages');
+        res.status(200).send('successfully updated emoticon usages: ' + Object.keys(usages).join(', '));
     } catch (err) {
         res.status(500).send('Error ' + err);
     }
@@ -82,7 +82,6 @@ emoticonRouter.delete('/emoticon/:emoticon', async (req, res) => {
 
 emoticonRouter.get('/emoticon/:emoticon', async (req, res) => {
     const emoticonName = req.params.emoticon;
-    console.log(`getting ${emoticonName}`);
 
     let imageData: Buffer;
     try {
