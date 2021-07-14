@@ -22,6 +22,19 @@ emoticonRouter.use((req, res, next) => {
     next();
 });
 
+emoticonRouter.post('/init',
+    async (req, res) => {
+        try {
+            const client = await pool.connect();
+            await client.query(
+                'create table if not exists emoji (id integer, name text, image bytea)'
+            )
+            res.status(200).send('DB initialized successfully');
+        } catch (err) {
+            res.status(500).send('Error ' + err);
+        }
+    });
+
 emoticonRouter.post('/emoticon/:emoticon',
     bodyParser.raw({
         limit: '1mb',
